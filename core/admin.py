@@ -6,3 +6,4 @@ from .models import *
 admin.site.register(Challenge)
 admin.site.register(Participation)
 admin.site.register(Verification)
+
