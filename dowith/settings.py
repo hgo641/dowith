@@ -130,3 +130,15 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+# docker-compose 사용시 redis://redis:6379/0
+# Broker은 celery worker과 django app을 연결시켜주는 DB
+# Redis 기준 redis://server:port/db 형식으로 지정
+# db 는 정수 0 ~ 15까지 사용 가능, mysql의 db 이름과 동일한 역할
+# 인증을 걸 수 도 있으나, 통상 로컬호스트 내에서만 실행하므로 생략
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE  # Celery Beats에서 사용할 Time Zone
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
