@@ -44,6 +44,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     nickname = models.CharField(max_length=10, null=False, blank=False)
     registered_on = models.DateTimeField(auto_now_add=True)
     image_url = models.URLField(null=True, blank=True)
+    point = models.PositiveIntegerField(null=False, blank=False, default=5000)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
