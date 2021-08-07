@@ -49,6 +49,8 @@ class ChallengeMainView(APIView):
 
 class ChallengeTodayView(APIView):
 
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
 
         ongoing_challenge = Challenge.objects.filter(participation__user=request.user,
@@ -67,12 +69,9 @@ class ChallengeTodayView(APIView):
         return Response(return_data)
 
 
-class ChallengeDetailView(APIView):
-    def get(self, request, pk):
-        pass
-
-
 class ChallengeMyView(APIView):
+
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
 
@@ -97,6 +96,21 @@ class ChallengeMyView(APIView):
         }
 
         return Response(return_data)
+
+
+class ChallengeDetailView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        try:
+            challenge = Challenge.objects.get(pk=pk)
+            serializer = ChallengeDetailSerializer(challenge)
+            return Response(serializer.data)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
 
 
 def dowith_celery(request):
