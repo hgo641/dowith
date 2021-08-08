@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
@@ -54,3 +53,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['nickname']
 
 
+class RefreshToken(models.Model):
+    id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, null=False, blank=False
+    )
+    last_refreshed = models.DateTimeField(
+        default=datetime.utcnow, null=False, blank=False
+    )
+    user = models.ForeignKey(
+        "User",
+        on_delete=models.CASCADE,
+        related_name="refresh_tokens",
+        null=False,
+        blank=False,
+    )
+    device = models.CharField(max_length=300, null=True, blank=True)
+    ip = models.GenericIPAddressField(
+        unpack_ipv4=True, protocol="both", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
