@@ -16,7 +16,7 @@ class Challenge(models.Model):
     fee = models.PositiveIntegerField(null=False, blank=False)
     life = models.PositiveSmallIntegerField(null=False, blank=False)
     captain = models.ForeignKey(User, on_delete=models.PROTECT)
-
+    total_accumulated_fine = models.PositiveIntegerField(null=False, blank=False, default=0)
 
 class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

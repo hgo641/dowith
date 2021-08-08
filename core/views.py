@@ -8,7 +8,7 @@ from rest_framework.permissions import *
 from .tasks import dowith_duhee
 
 
-class ChallengeView(APIView):
+class ChallengeMainView(APIView):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 
@@ -17,7 +17,8 @@ class ChallengeView(APIView):
         gathering_challenge = Challenge.objects.filter(start_date__gt=datetime.date.today())
         gathering_serializer = ChallengeSerializer(gathering_challenge, many=True)
 
-        ongoing_challenge = Challenge.objects.filter(start_date__lte=datetime.date.today(), end_date__gte=datetime.date.today())
+        ongoing_challenge = Challenge.objects.filter(start_date__lte=datetime.date.today(),
+                                                     end_date__gte=datetime.date.today())
         ongoing_serializer = ChallengeSerializer(ongoing_challenge, many=True)
 
         complete_challenge = Challenge.objects.filter(end_date__lt=datetime.date.today())
@@ -46,9 +47,71 @@ class ChallengeView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ChallengeTodayView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        ongoing_challenge = Challenge.objects.filter(participation__user=request.user,
+                                                     participation__verification=None)
+        finished_challenge = Challenge.objects.filter(participation__user=request.user,
+                                                      participation__verification=not None)
+
+        ongoing_serializer = ChallengeSerializer(ongoing_challenge, many=True)
+        finished_serializer = ChallengeSerializer(finished_challenge, many=True)
+
+        return_data = {
+            "ongoing": ongoing_serializer.data,
+            "finished": finished_serializer.data
+        }
+
+        return Response(return_data)
+
+
+class ChallengeMyView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        participated_challenge = Challenge.objects.filter(participation__user=request.user)
+        participated_ongoing_challenge = participated_challenge.filter(start_date__lte=datetime.date.today(),
+                                                                       end_date__gte=datetime.date.today())
+
+        participated_ongoing_serializer = ChallengeSerializer(participated_ongoing_challenge, many=True)
+
+        finished_challenge = participated_challenge.filter(end_date__lt=datetime.date.today())
+        finished_serializer = ChallengeSerializer(finished_challenge, many=True)
+
+        gathering_challenge = participated_challenge.filter(start_date__gt=datetime.date.today())
+        gathering_serializer = GatheringChallengeSerializer(gathering_challenge, many=True)
+
+        return_data = {
+            "gathering_ongoing_count": gathering_challenge.count() + participated_ongoing_challenge.count(),
+            "finished_count": finished_challenge.count(),
+            "gathering": gathering_serializer.data,
+            "ongoing": participated_ongoing_serializer.data,
+            "finished": finished_serializer.data
+        }
+
+        return Response(return_data)
+
+
 class ChallengeDetailView(APIView):
+
+    permission_classes = [AllowAny]
+
     def get(self, request, pk):
-        pass
+        try:
+            challenge = Challenge.objects.get(pk=pk)
+            serializer = ChallengeDetailSerializer(challenge)
+            return Response(serializer.data)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+
 
 def dowith_celery(request):
     dowith_duhee.delay('이렇게도 되고')

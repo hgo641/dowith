@@ -3,13 +3,15 @@ import re
 from django.conf import settings
 from django.shortcuts import render
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import *
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 import jwt
 
 from .jwt import generateAccessToken, generateRefreshToken
+from .models import *
 from .models import RefreshToken
 from .serializers import *
 from .social import google_get_user, kakao_get_user, naver_get_user
@@ -153,3 +155,11 @@ class ForceLogOut(APIView):
         )
 
 
+class UserView(APIView):
+    def get(self, request, pk):
+
+        serializer = UserSerializer(request.user)
+        if request.user.id is pk:
+            return Response(serializer.data)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
