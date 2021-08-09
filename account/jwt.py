@@ -17,7 +17,7 @@ def generateAccessToken(user):
             "exp": datetime.utcnow() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRES_MINUTES)),
             "aud": aud,
             "type": "access",
-            "provider": user.social_provider,
+            "provider": user.provider,
             "nickname": user.nickname,
         },
         settings.SECRET_KEY,

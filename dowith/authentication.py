@@ -19,6 +19,7 @@ class JWTAuthentication(BaseAuthentication):
             if token[0] != 'Bearer':
                 return None
             token = token[1]
+            print(token)
             access_data = jwt.decode(
                 token,
                 settings.SECRET_KEY,
@@ -26,7 +27,7 @@ class JWTAuthentication(BaseAuthentication):
                 audience="urn:dowith:user",
                 issuer="urn:dowith"
             )
-            uuid = access_data.get('sub')
+            id = access_data.get('sub')
             user = User.objects.get(id=id)
             return (user, None)
         except (ValueError, jwt.exceptions.DecodeError):
