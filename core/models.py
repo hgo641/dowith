@@ -18,6 +18,7 @@ class Challenge(models.Model):
     captain = models.ForeignKey(User, on_delete=models.PROTECT)
     total_accumulated_fine = models.PositiveIntegerField(null=False, blank=False, default=0)
 
+
 class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     challenge = models.ForeignKey(Challenge, on_delete=models.PROTECT)
@@ -29,4 +30,4 @@ class Verification(models.Model):
     file_url = models.URLField()
     article = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_reported = models.BooleanField(default=False)
+    is_verificated = models.BooleanField(default=False)

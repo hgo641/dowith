@@ -100,7 +100,7 @@ class ChallengeMyView(APIView):
 
 class ChallengeDetailView(APIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, pk):
         try:
@@ -110,7 +110,169 @@ class ChallengeDetailView(APIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    def post(self, request, pk):
 
+        if not Challenge.objects.filter(pk=pk).exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        participation = Participation.objects.filter(user=request.user, challenge=pk)
+
+        if not participation.exists():
+            participation = Participation()
+            participation.user = request.user
+            participation.challenge_id = pk
+            participation.life_left = Challenge.objects.get(pk=pk).life
+            participation.save()
+
+            return Response(ParticipationSerializer(participation).data, status=status.HTTP_201_CREATED)
+
+        else:
+
+            return Response(status=status.HTTP_201_CREATED)
+
+
+class VerificationDetailView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+
+        try:
+            verification = Verification.objects.get(pk=pk)
+            participation = Participation.objects.get(pk=verification.participation_id_id, user=request.user)
+            if participation is not None:
+                serializer = VerificationSerializer(verification)
+                return Response(serializer.data)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def post(self, request, pk):
+
+        verifications = Verification.objects.filter(pk=pk)
+
+        if verifications.exists():
+            verification = verifications.first()
+            challenges = Challenge.objects.filter(pk=verification.participation_id.challenge_id)
+            if challenges.exists():
+                if challenges.first().captain.id is request.user.id:
+                    verification.is_verificated = True
+                    verification.save()
+                    return Response(status=status.HTTP_200_OK)
+                else:
+                    return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerificationListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, challenge_id):
+
+        try:
+            participation = Participation.objects.get(challenge=challenge_id, user=request.user)
+            if participation is not None:
+                verifications = Verification.objects.filter(participation_id__challenge=challenge_id).order_by("-created_at")
+                serializer = VerificationListSerializer(verifications, many=True)
+                return Response(serializer.data)
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class VerificationCreateView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, challenge_id):
+
+        try:
+            participation = Participation.objects.get(challenge=challenge_id, user=request.user)
+            if participation is not None:
+
+                serializer = VerificationSerializer(data=request.data)
+
+                if serializer.is_valid():
+
+                    serializer.save(participation_id=participation)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class VerificationMyView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, challenge_id):
+        try:
+            participation = Participation.objects.get(challenge=challenge_id, user=request.user)
+            challenge = Challenge.objects.get(pk=challenge_id)
+
+            verifications = Verification.objects.filter(participation_id=participation).order_by("-created_at")
+            serializer = VerificationSerializer(verifications, many=True)
+
+            verification_completed_count = verifications.count()
+            elapsed_days = (datetime.date.today() - challenge.start_date).days + 1
+            verification_failed_count = elapsed_days - verification_completed_count
+
+            return_data = {
+                "verification_complete_count": verification_completed_count,
+                "verification_failed_count": verification_failed_count,
+                "total_challenge_ratio": int(verification_completed_count/elapsed_days * 100),
+                "verifications": serializer.data,
+            }
+
+            return Response(return_data)
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class ChallengeRankView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, challenge_id):
+        participation = Participation.objects.filter(challenge=challenge_id, user=request.user)
+        if not participation.exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            participations = Participation.objects.filter(challenge=challenge_id).order_by("-life_left")
+            serializer = ParticipationRankSerializer(participations, many=True)
+
+            temp_data = serializer.data
+            temp_rank = 0
+            temp_life = -1
+            my_data = dict()
+            for i, data in enumerate(temp_data):
+
+                if data["life_left"] is not temp_life:
+
+                    temp_life = data["life_left"]
+                    temp_rank = temp_rank + 1
+
+                data["rank"] = temp_rank
+
+                if data["user"] is request.user.id:
+                    my_data = data
+
+            return_data = {
+                "my": my_data,
+                "challenge_life": Challenge.objects.get(pk=challenge_id).life,
+                "participations": temp_data
+
+            }
+
+            return Response(return_data)
 
 
 def dowith_celery(request):
