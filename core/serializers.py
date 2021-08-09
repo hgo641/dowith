@@ -7,6 +7,8 @@ import datetime
 class ChallengeSerializer(serializers.ModelSerializer):
 
     participated_count = serializers.SerializerMethodField()
+    total_challenge_period = serializers.SerializerMethodField()
+    elapsed_days = serializers.SerializerMethodField()
 
     class Meta:
         model = Challenge
@@ -16,13 +18,22 @@ class ChallengeSerializer(serializers.ModelSerializer):
     def get_participated_count(self, obj):
         return Participation.objects.filter(challenge=obj).count()
 
+    def get_total_challenge_period(self, obj):
+        return (obj.end_date - obj.start_date).days + 1
+
+    def get_elapsed_days(self, obj):
+        if obj.start_date <= datetime.date.today():
+            return (datetime.date.today() - obj.start_date).days + 1
+        else:
+            return 0
+
 
 class ParticipationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Participation
         fields = "__all__"
-        read_only_fields = ('user', 'challenge', 'life_left', )
+        read_only_fields = ('user', 'challenge', )
 
 
 class GatheringChallengeSerializer(serializers.ModelSerializer):
@@ -40,9 +51,18 @@ class GatheringChallengeSerializer(serializers.ModelSerializer):
 
 class VerificationListSerializer(serializers.ModelSerializer):
 
+    nickname = serializers.SerializerMethodField()
+    user_image_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Verification
         fields = "__all__"
+
+    def get_nickname(self, obj):
+        return obj.participation_id.user.nickname
+
+    def get_user_image_url(self, obj):
+        return obj.participation_id.user.image_url
 
 
 class VerificationSerializer(serializers.ModelSerializer):
@@ -60,22 +80,6 @@ class VerificationSerializer(serializers.ModelSerializer):
         serializer = UserSerializer(user)
 
         return serializer.data
-
-
-class ParticipationRankSerializer(serializers.ModelSerializer):
-
-    nickname = serializers.SerializerMethodField()
-    image_url = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Participation
-        fields = "__all__"
-
-    def get_nickname(self, obj):
-        return obj.user.nickname
-
-    def get_image_url(self, obj):
-        return obj.user.image_url
 
 
 class ChallengeDetailSerializer(serializers.ModelSerializer):
