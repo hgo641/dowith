@@ -30,4 +30,4 @@ class Verification(models.Model):
     file_url = models.URLField()
     article = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    is_reported = models.BooleanField(default=False)
+    is_verificated = models.BooleanField(default=False)

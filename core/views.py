@@ -139,7 +139,6 @@ class VerificationDetailView(APIView):
 
         try:
             verification = Verification.objects.get(pk=pk)
-            print(verification.participation_id)
             participation = Participation.objects.get(pk=verification.participation_id_id, user=request.user)
             if participation is not None:
                 serializer = VerificationSerializer(verification)
@@ -148,6 +147,25 @@ class VerificationDetailView(APIView):
 
         except:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def post(self, request, pk):
+
+        verifications = Verification.objects.filter(pk=pk)
+
+        if verifications.exists():
+            verification = verifications.first()
+            challenges = Challenge.objects.filter(pk=verification.participation_id.challenge_id)
+            if challenges.exists():
+                if challenges.first().captain.id is request.user.id:
+                    verification.is_verificated = True
+                    verification.save()
+                    return Response(status=status.HTTP_200_OK)
+                else:
+                    return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+            else:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerificationListView(APIView):
@@ -247,14 +265,12 @@ class ChallengeRankView(APIView):
                 if data["user"] is request.user.id:
                     my_data = data
 
-
             return_data = {
                 "my": my_data,
                 "challenge_life": Challenge.objects.get(pk=challenge_id).life,
                 "participations": temp_data
 
             }
-
 
             return Response(return_data)
 
