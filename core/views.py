@@ -100,7 +100,7 @@ class ChallengeMyView(APIView):
 
 class ChallengeDetailView(APIView):
 
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, pk):
         try:
@@ -110,7 +110,120 @@ class ChallengeDetailView(APIView):
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+    def post(self, request, pk):
 
+        if not Challenge.objects.filter(pk=pk).exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        participation = Participation.objects.filter(user=request.user, challenge=pk)
+
+        if not participation.exists():
+            participation = Participation()
+            participation.user = request.user
+            participation.challenge_id = pk
+            participation.life_left = Challenge.objects.get(pk=pk).life
+            participation.save()
+
+            return Response(ParticipationSerializer(participation).data, status=status.HTTP_201_CREATED)
+
+        else:
+
+            return Response(status=status.HTTP_201_CREATED)
+
+
+
+
+
+class VerificationDetailView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+
+        try:
+            verification = Verification.objects.get(pk=pk)
+            print(verification.participation_id)
+            participation = Participation.objects.get(pk=verification.participation_id_id, user=request.user)
+            if participation is not None:
+                serializer = VerificationSerializer(verification)
+                return Response(serializer.data)
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class VerificationListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, challenge_id):
+
+        try:
+            participation = Participation.objects.get(challenge=challenge_id, user=request.user)
+            if participation is not None:
+                verifications = Verification.objects.filter(participation_id__challenge=challenge_id).order_by("-created_at")
+                serializer = VerificationListSerializer(verifications, many=True)
+                return Response(serializer.data)
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class VerificationCreateView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, challenge_id):
+
+        try:
+            participation = Participation.objects.get(challenge=challenge_id, user=request.user)
+            if participation is not None:
+
+                serializer = VerificationSerializer(data=request.data)
+
+                if serializer.is_valid():
+
+                    serializer.save(participation_id=participation)
+                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class VerificationMyView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, challenge_id):
+        try:
+            participation = Participation.objects.get(challenge=challenge_id, user=request.user)
+            challenge = Challenge.objects.get(pk=challenge_id)
+
+            verifications = Verification.objects.filter(participation_id=participation).order_by("-created_at")
+            serializer = VerificationSerializer(verifications, many=True)
+
+            verification_completed_count = verifications.count()
+            elapsed_days = (datetime.date.today() - challenge.start_date).days + 1
+            verification_failed_count = elapsed_days - verification_completed_count
+
+            return_data = {
+                "verification_complete_count": verification_completed_count,
+                "verification_failed_count": verification_failed_count,
+                "total_challenge_ratio": int(verification_completed_count/elapsed_days * 100),
+                "verifications": serializer.data,
+            }
+
+            return Response(return_data)
+
+        except:
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 def dowith_celery(request):
