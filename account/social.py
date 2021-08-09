@@ -6,8 +6,8 @@ from rest_framework.response import Response
 
 
 def kakao_get_access_token(data):
-    app_rest_api_key = "f6388f93e2475df445a36beaa8f98c18"
-    redirect_uri = "http://127.0.0.1:8080/auth/kakao"
+    app_rest_api_key = "2589e2db71042b3e03d86f96e07aec79"
+    redirect_uri = "http://127.0.0.1:3000/account/kakao"
     code = data.get("code")
     url = 'https://kauth.kakao.com/oauth/token'
 

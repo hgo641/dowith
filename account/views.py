@@ -157,7 +157,6 @@ class ForceLogOut(APIView):
 
 class UserView(APIView):
     def get(self, request, pk):
-
         serializer = UserSerializer(request.user)
         if request.user.id is pk:
             return Response(serializer.data)
