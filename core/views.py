@@ -131,9 +131,6 @@ class ChallengeDetailView(APIView):
             return Response(status=status.HTTP_201_CREATED)
 
 
-
-
-
 class VerificationDetailView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -189,10 +186,6 @@ class VerificationCreateView(APIView):
 
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-
-
         except:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -224,6 +217,46 @@ class VerificationMyView(APIView):
 
         except:
             return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class ChallengeRankView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, challenge_id):
+        participation = Participation.objects.filter(challenge=challenge_id, user=request.user)
+        if not participation.exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            participations = Participation.objects.filter(challenge=challenge_id).order_by("-life_left")
+            serializer = ParticipationRankSerializer(participations, many=True)
+
+            temp_data = serializer.data
+            temp_rank = 0
+            temp_life = -1
+            my_data = dict()
+            for i, data in enumerate(temp_data):
+
+                if data["life_left"] is not temp_life:
+
+                    temp_life = data["life_left"]
+                    temp_rank = temp_rank + 1
+
+                data["rank"] = temp_rank
+
+                if data["user"] is request.user.id:
+                    my_data = data
+
+
+            return_data = {
+                "my": my_data,
+                "challenge_life": Challenge.objects.get(pk=challenge_id).life,
+                "participations": temp_data
+
+            }
+
+
+            return Response(return_data)
 
 
 def dowith_celery(request):

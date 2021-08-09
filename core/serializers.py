@@ -62,6 +62,22 @@ class VerificationSerializer(serializers.ModelSerializer):
         return serializer.data
 
 
+class ParticipationRankSerializer(serializers.ModelSerializer):
+
+    nickname = serializers.SerializerMethodField()
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Participation
+        fields = "__all__"
+
+    def get_nickname(self, obj):
+        return obj.user.nickname
+
+    def get_image_url(self, obj):
+        return obj.user.image_url
+
+
 class ChallengeDetailSerializer(serializers.ModelSerializer):
 
     challenge_status = serializers.SerializerMethodField()
@@ -82,17 +98,17 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
 
     def get_challenge_status(self, obj):
         if obj.start_date <= datetime.date.today() <= obj.end_date:
-            return "ongoing"
+            return "진행 중"
         elif datetime.date.today() < obj.start_date:
-            return "gathering"
+            return "시작 전".format((obj.start_date - datetime.date.today()).days)
         else:
-            return "finished"
+            return "종료된 챌린지"
 
     def get_participated_count(self, obj):
         return Participation.objects.filter(challenge=obj).count()
 
     def get_total_challenge_period(self, obj):
-        return (obj.end_date - obj.start_date).days
+        return (obj.end_date - obj.start_date).days + 1
 
     def get_elapsed_days(self, obj):
         if obj.start_date <= datetime.date.today():
@@ -101,4 +117,7 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
             return 0
 
     def get_days_left(self, obj):
-        return (obj.start_date - datetime.date.today()).days
+        if obj.start_date <= datetime.date.today():
+            return 0
+        else:
+            return (obj.start_date - datetime.date.today()).days

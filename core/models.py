@@ -18,6 +18,7 @@ class Challenge(models.Model):
     captain = models.ForeignKey(User, on_delete=models.PROTECT)
     total_accumulated_fine = models.PositiveIntegerField(null=False, blank=False, default=0)
 
+
 class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     challenge = models.ForeignKey(Challenge, on_delete=models.PROTECT)
