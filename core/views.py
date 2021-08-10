@@ -300,10 +300,12 @@ class ChallengeRankView(APIView):
 
                 temp_list.append(temp_dict)
 
+                if user.id is request.user.id:
+                    return_dict["my"] = temp_dict
+
             return_dict["participations"] = temp_list
 
             return Response(return_dict)
-
 
 
 def dowith_celery(request):
