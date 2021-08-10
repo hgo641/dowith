@@ -19,7 +19,6 @@ class JWTAuthentication(BaseAuthentication):
             if token[0] != 'Bearer':
                 return None
             token = token[1]
-            print(token)
             access_data = jwt.decode(
                 token,
                 settings.SECRET_KEY,
