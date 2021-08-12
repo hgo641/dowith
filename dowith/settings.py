@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,12 +26,13 @@ SECRET_KEY = 'django-insecure-=frl=ssrt2!nb@j78czp#uqx02$*cqcz1mdb085y7@b^pae@*a
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -126,21 +129,41 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
-# docker-compose 사용시 redis://redis:6379/0
-# Broker은 celery worker과 django app을 연결시켜주는 DB
-# Redis 기준 redis://server:port/db 형식으로 지정
-# db 는 정수 0 ~ 15까지 사용 가능, mysql의 db 이름과 동일한 역할
-# 인증을 걸 수 도 있으나, 통상 로컬호스트 내에서만 실행하므로 생략
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE  # Celery Beats에서 사용할 Time Zone
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# Rest Framework Authentication Classes
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "dowith.authentication.JWTAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
+    "DEFAULT_PARSER_CLASSES": ("rest_framework.parsers.JSONParser",),
+}
+
+# AWS Config
+AWS_ACCESS_KEY_ID = 'AKIAW6SUIGNQC5JDA44G'
+AWS_SECRET_ACCESS_KEY = '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'
+
+# S3 File Storage
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AWS_STORAGE_BUCKET_NAME = 'likelion-django-lesson'
+AWS_S3_CUSTOM_DOMAIN = 'd1f5v0bury73ux.cloudfront.net'
+
+# CORS Allow All
+CORS_ORIGIN_ALLOW_ALL = True
+
+#CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'

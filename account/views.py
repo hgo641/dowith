@@ -155,11 +155,10 @@ class ForceLogOut(APIView):
         )
 
 
-class UserView(APIView):
-    def get(self, request, pk):
+class UserView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
 
-        serializer = UserSerializer(request.user)
-        if request.user.id is pk:
-            return Response(serializer.data)
-        else:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+    def get_object(self):
+        return self.request.user
+

@@ -7,6 +7,8 @@ import datetime
 class ChallengeSerializer(serializers.ModelSerializer):
 
     participated_count = serializers.SerializerMethodField()
+    total_challenge_period = serializers.SerializerMethodField()
+    elapsed_days = serializers.SerializerMethodField()
 
     class Meta:
         model = Challenge
@@ -16,13 +18,22 @@ class ChallengeSerializer(serializers.ModelSerializer):
     def get_participated_count(self, obj):
         return Participation.objects.filter(challenge=obj).count()
 
+    def get_total_challenge_period(self, obj):
+        return (obj.end_date - obj.start_date).days + 1
+
+    def get_elapsed_days(self, obj):
+        if obj.start_date <= datetime.date.today():
+            return (datetime.date.today() - obj.start_date).days + 1
+        else:
+            return 0
+
 
 class ParticipationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Participation
         fields = "__all__"
-        read_only_fields = ('user', 'challenge', 'life_left', )
+        read_only_fields = ('user', 'challenge', )
 
 
 class GatheringChallengeSerializer(serializers.ModelSerializer):
@@ -40,14 +51,36 @@ class GatheringChallengeSerializer(serializers.ModelSerializer):
 
 class VerificationListSerializer(serializers.ModelSerializer):
 
+    nickname = serializers.SerializerMethodField()
+    user_image = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
+
     class Meta:
         model = Verification
         fields = "__all__"
+
+    def get_nickname(self, obj):
+        return obj.participation_id.user.nickname
+
+    def get_user_image(self, obj):
+        try:
+            return obj.participation_id.user.image.url
+        except:
+            return None
+
+    def get_type(self, obj):
+        if not obj.file and obj.image:
+            return "image"
+        elif (obj.file and obj.image) or obj.file:
+            return "video"
+        else:
+            return "unknown"
 
 
 class VerificationSerializer(serializers.ModelSerializer):
 
     author = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = Verification
@@ -60,6 +93,14 @@ class VerificationSerializer(serializers.ModelSerializer):
         serializer = UserSerializer(user)
 
         return serializer.data
+
+    def get_type(self, obj):
+        if not obj.file and obj.image:
+            return "image"
+        elif (obj.file and obj.image) or obj.file:
+            return "video"
+        else:
+            return "unknown"
 
 
 class ChallengeDetailSerializer(serializers.ModelSerializer):
@@ -82,17 +123,17 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
 
     def get_challenge_status(self, obj):
         if obj.start_date <= datetime.date.today() <= obj.end_date:
-            return "ongoing"
+            return "진행 중"
         elif datetime.date.today() < obj.start_date:
-            return "gathering"
+            return "시작 전".format((obj.start_date - datetime.date.today()).days)
         else:
-            return "finished"
+            return "종료된 챌린지"
 
     def get_participated_count(self, obj):
         return Participation.objects.filter(challenge=obj).count()
 
     def get_total_challenge_period(self, obj):
-        return (obj.end_date - obj.start_date).days
+        return (obj.end_date - obj.start_date).days + 1
 
     def get_elapsed_days(self, obj):
         if obj.start_date <= datetime.date.today():
@@ -101,4 +142,7 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
             return 0
 
     def get_days_left(self, obj):
-        return (obj.start_date - datetime.date.today()).days
+        if obj.start_date <= datetime.date.today():
+            return 0
+        else:
+            return (obj.start_date - datetime.date.today()).days

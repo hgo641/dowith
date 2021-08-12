@@ -8,16 +8,16 @@ REFRESH_TOKEN_EXPIRES_DAYS = os.environ.get("REFRESH_TOKEN_EXPIRES", "365")
 
 
 def generateAccessToken(user):
-    aud = ["urn:korowd:user"]
+    aud = ["urn:dowith:user"]
     return jwt.encode(
         {
-            "iss": "urn:korowd",
+            "iss": "urn:dowith",
             "sub": str(user.id),
             "iat": datetime.utcnow(),
             "exp": datetime.utcnow() + timedelta(minutes=int(ACCESS_TOKEN_EXPIRES_MINUTES)),
             "aud": aud,
             "type": "access",
-            "provider": user.social_provider,
+            "provider": user.provider,
             "nickname": user.nickname,
         },
         settings.SECRET_KEY,
@@ -41,7 +41,7 @@ def generateRefreshToken(user, request, refresh):
     refresh.save()
     return jwt.encode(
         {
-            "iss": "urn:korowd",
+            "iss": "urn:dowith",
             "sub": str(refresh.id),
             "iat": refresh.last_refreshed,
             "exp": refresh.last_refreshed + timedelta(days=int(REFRESH_TOKEN_EXPIRES_DAYS)),
