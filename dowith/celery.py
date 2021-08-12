@@ -24,7 +24,7 @@ def debug_task(self):
 
 app.conf.beat_schedule = {
     'distribute-charge-every-midnight':{
-        'task':'tasks.distribute_reward',
+        'task':'tasks.distribute_charge',
         'schedule' : crontab(minute=0, hour=0),
     },
 }
