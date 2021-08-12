@@ -5,7 +5,7 @@ from .serializers import *
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import *
-from .tasks import dowith_duhee
+from .tasks import distribute_charge, dowith_duhee
 from django.db.models import Count
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -97,6 +97,15 @@ class ChallengeMyView(APIView):
         finished_challenge = participated_challenge.filter(end_date__lt=datetime.date.today())
         finished_serializer = ChallengeSerializer(finished_challenge, many=True)
 
+        temp_finished_return = finished_serializer.data
+
+        print(temp_finished_return)
+
+        for item in temp_finished_return:
+            item["total_distribute_charge"] = Participation.objects.get(challenge=item["id"], user=request.user).total_distribute_charge
+
+        print(temp_finished_return)
+
         gathering_challenge = participated_challenge.filter(start_date__gt=datetime.date.today())
         gathering_serializer = GatheringChallengeSerializer(gathering_challenge, many=True)
 
@@ -105,7 +114,7 @@ class ChallengeMyView(APIView):
             "finished_count": finished_challenge.count(),
             "gathering": gathering_serializer.data,
             "ongoing": participated_ongoing_serializer.data,
-            "finished": finished_serializer.data
+            "finished": temp_finished_return
         }
 
         return Response(return_data)
@@ -135,6 +144,14 @@ class ChallengeDetailView(APIView):
             participation.user = request.user
             participation.challenge_id = pk
             participation.save()
+
+            user = User.objects.get(pk=request.user.id)
+
+            if user.point < participation.challenge.fee:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user.point = user.point - participation.challenge.fee
+                user.save()
 
             return Response(ParticipationSerializer(participation).data, status=status.HTTP_201_CREATED)
 
@@ -269,8 +286,10 @@ class ChallengeRankView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, challenge_id):
+
         participations = Participation.objects.filter(challenge=challenge_id, user=request.user)
         challenge = Challenge.objects.get(pk=challenge_id)
+
         if not participations.exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -280,10 +299,13 @@ class ChallengeRankView(APIView):
                 .annotate(verification_count=Count("participation_id__user"))\
                 .order_by('-verification_count')
 
+            print(verifications)
+
             return_dict = dict()
             temp_list = list()
             temp_rank = 0
             temp_count = -1
+
 
             if challenge.start_date <= datetime.date.today():
                 return_dict["elapse_days"] = (datetime.date.today() - challenge.start_date).days + 1
@@ -291,7 +313,6 @@ class ChallengeRankView(APIView):
                 return_dict["elapse_days"] = 0
             print("notyet")
             for verification in verifications:
-                print(verifications)
                 temp_dict = dict()
                 temp_dict['user_id'] = verification["participation_id__user"]
                 temp_dict['verification_count'] = verification["verification_count"]
@@ -299,7 +320,11 @@ class ChallengeRankView(APIView):
                 user = User.objects.get(pk=temp_dict['user_id'])
 
                 temp_dict["nickname"] = user.nickname
-                temp_dict["image_url"] = user.image_url
+
+                if user.image_url:
+                    temp_dict["image_url"] = user.image_url.url
+                else:
+                    temp_dict["image_url"] = None
 
                 if temp_dict["verification_count"] is not temp_count:
                     temp_count = temp_dict["verification_count"]
@@ -320,5 +345,6 @@ class ChallengeRankView(APIView):
 def dowith_celery(request):
     dowith_duhee.delay('이렇게도 되고')
     dowith_duhee.apply_async(('expires 는 선택', ), expires=600)
+    distribute_charge.delay()
     return None
 

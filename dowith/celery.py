@@ -22,9 +22,9 @@ app.autodiscover_tasks()
 def debug_task(self):
     print(f'Request: {self.request!r}')
 
-app.conf.beat_schedule = {
-    'distribute-charge-every-midnight':{
-        'task':'tasks.distribute_charge',
-        'schedule' : crontab(minute=0, hour=0),
-    },
-}
+# app.conf.beat_schedule = {
+#     'distribute-charge-every-midnight':{
+#         'task':'tasks.distribute_charge',
+#         'schedule' : crontab(minute=0, hour=0),
+#     },
+# }
