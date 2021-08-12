@@ -286,8 +286,10 @@ class ChallengeRankView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, challenge_id):
+
         participations = Participation.objects.filter(challenge=challenge_id, user=request.user)
         challenge = Challenge.objects.get(pk=challenge_id)
+
         if not participations.exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
@@ -297,10 +299,13 @@ class ChallengeRankView(APIView):
                 .annotate(verification_count=Count("participation_id__user"))\
                 .order_by('-verification_count')
 
+            print(verifications)
+
             return_dict = dict()
             temp_list = list()
             temp_rank = 0
             temp_count = -1
+
 
             if challenge.start_date <= datetime.date.today():
                 return_dict["elapse_days"] = (datetime.date.today() - challenge.start_date).days + 1
@@ -308,6 +313,7 @@ class ChallengeRankView(APIView):
                 return_dict["elapse_days"] = 0
 
             for verification in verifications:
+
                 temp_dict = dict()
                 temp_dict['user_id'] = verification["participation_id__user"]
                 temp_dict['verification_count'] = verification["verification_count"]
@@ -315,8 +321,9 @@ class ChallengeRankView(APIView):
                 user = User.objects.get(pk=temp_dict['user_id'])
 
                 temp_dict["nickname"] = user.nickname
+
                 if user.image_url:
-                    temp_dict["image_url"] = user.image_url
+                    temp_dict["image_url"] = user.image_url.url
                 else:
                     temp_dict["image_url"] = None
 
