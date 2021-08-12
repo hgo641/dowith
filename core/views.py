@@ -136,6 +136,14 @@ class ChallengeDetailView(APIView):
             participation.challenge_id = pk
             participation.save()
 
+            user = User.objects.get(pk=request.user.id)
+
+            if user.point < participation.challenge.fee:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            else:
+                user.point = user.point - participation.challenge.fee
+                user.save()
+
             return Response(ParticipationSerializer(participation).data, status=status.HTTP_201_CREATED)
 
         else:
