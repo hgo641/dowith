@@ -6,7 +6,7 @@ import uuid
 
 
 # Create your models here.
-
+datetime.utcnow()
 
 class UserManager(BaseUserManager):
 

@@ -165,3 +165,5 @@ AWS_S3_CUSTOM_DOMAIN = 'd1f5v0bury73ux.cloudfront.net'
 
 # CORS Allow All
 CORS_ORIGIN_ALLOW_ALL = True
+
+#CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
