@@ -5,7 +5,7 @@ from .serializers import *
 from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.permissions import *
-from .tasks import dowith_duhee
+from .tasks import distribute_charge, dowith_duhee
 from django.db.models import Count
 from rest_framework.parsers import MultiPartParser, FormParser
 
@@ -346,5 +346,6 @@ class ChallengeRankView(APIView):
 def dowith_celery(request):
     dowith_duhee.delay('이렇게도 되고')
     dowith_duhee.apply_async(('expires 는 선택', ), expires=600)
+    distribute_charge.delay()
     return None
 
