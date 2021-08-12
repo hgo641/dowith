@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'core.apps.CoreConfig',
     'account.apps.AccountConfig',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -143,12 +144,13 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE  # Celery Beats에서 사용할 Time Zone
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 
 # Rest Framework Authentication Classes
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "dowith.authentication.JWTAuthentication",
-        # "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.SessionAuthentication"s,
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
     "DEFAULT_PARSER_CLASSES": ("rest_framework.parsers.JSONParser",),
