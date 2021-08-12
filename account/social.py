@@ -42,7 +42,7 @@ def kakao_get_user(data):
     kakao_response = kakao_response.json()
 
     user, created = User.objects.get_or_create(
-        social_provider='kakao', social_uid=kakao_response['id'])
+        provider='kakao', uid=kakao_response['id'])
     if created:
         user.nickname = kakao_response['properties'].get('nickname')
         gender = kakao_response['kakao_account'].get('gender')
@@ -88,7 +88,7 @@ def naver_get_user(data):
     response = naver_response.json()
 
     user, created = User.objects.get_or_create(
-        social_provider='naver', social_uid=response['response']['id'])
+        provider='naver', uid=response['response']['id'])
     if created:
         user.nickname = response['response'].get('nickname')
         gender = response['response'].get('gender')
@@ -110,7 +110,7 @@ def google_get_user(data):
         return None
 
     user, created = User.objects.get_or_create(
-        social_provider='google', social_uid=response['sub'])
+        provider='google', uid=response['sub'])
     if created:
         user.nickname = response.get('name')
         user.email = response.get('email')
