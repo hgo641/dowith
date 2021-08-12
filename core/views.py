@@ -97,6 +97,15 @@ class ChallengeMyView(APIView):
         finished_challenge = participated_challenge.filter(end_date__lt=datetime.date.today())
         finished_serializer = ChallengeSerializer(finished_challenge, many=True)
 
+        temp_finished_return = finished_serializer.data
+
+        print(temp_finished_return)
+
+        for item in temp_finished_return:
+            item["total_distribute_charge"] = Participation.objects.get(challenge=item["id"], user=request.user).total_distribute_charge
+
+        print(temp_finished_return)
+
         gathering_challenge = participated_challenge.filter(start_date__gt=datetime.date.today())
         gathering_serializer = GatheringChallengeSerializer(gathering_challenge, many=True)
 
@@ -105,7 +114,7 @@ class ChallengeMyView(APIView):
             "finished_count": finished_challenge.count(),
             "gathering": gathering_serializer.data,
             "ongoing": participated_ongoing_serializer.data,
-            "finished": finished_serializer.data
+            "finished": temp_finished_return
         }
 
         return Response(return_data)
@@ -306,7 +315,10 @@ class ChallengeRankView(APIView):
                 user = User.objects.get(pk=temp_dict['user_id'])
 
                 temp_dict["nickname"] = user.nickname
-                temp_dict["image_url"] = user.image_url
+                if user.image_url:
+                    temp_dict["image_url"] = user.image_url
+                else:
+                    temp_dict["image_url"] = None
 
                 if temp_dict["verification_count"] is not temp_count:
                     temp_count = temp_dict["verification_count"]
