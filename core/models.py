@@ -23,6 +23,7 @@ class Challenge(models.Model):
 class Participation(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     challenge = models.ForeignKey(Challenge, on_delete=models.PROTECT)
+    total_distribute_charge = models.PositiveIntegerField(null=False, blank=False, default=0)
 
     def __str__(self):
         return str("사용자 {}가 참여하는 {} 챌린지".format(self.user, self.challenge))
@@ -30,7 +31,8 @@ class Participation(models.Model):
 
 class Verification(models.Model):
     participation_id = models.ForeignKey(Participation, on_delete=models.PROTECT)
-    file = models.FileField(null=False, blank=False)
+    image = models.ImageField(null=True, blank=True)
+    file = models.FileField(null=True, blank=True)
     article = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verificated = models.BooleanField(default=False)

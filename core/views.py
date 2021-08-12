@@ -7,11 +7,13 @@ from rest_framework import status
 from rest_framework.permissions import *
 from .tasks import dowith_duhee
 from django.db.models import Count
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class ChallengeMainView(APIView):
 
     permission_classes = [IsAuthenticatedOrReadOnly]
+    parser_classes = (MultiPartParser, FormParser)
 
     def get(self, request):
 
@@ -33,7 +35,8 @@ class ChallengeMainView(APIView):
 
         return Response(return_data)
 
-    def post(self, request):
+    def post(self, request, *args, **kwargs):
+
 
         serializer = ChallengeSerializer(data=request.data)
 
@@ -149,8 +152,10 @@ class VerificationDetailView(APIView):
         try:
             verification = Verification.objects.get(pk=pk)
             participation = Participation.objects.get(pk=verification.participation_id_id, user=request.user)
+
             if participation is not None:
                 serializer = VerificationSerializer(verification)
+                print(serializer.data)
                 return Response(serializer.data)
             return Response(status=status.HTTP_403_FORBIDDEN)
 
@@ -188,8 +193,9 @@ class VerificationListView(APIView):
 
             if participation is not None:
                 verifications = Verification.objects.filter(participation_id__challenge=challenge_id).order_by("-created_at")
-                serializer = VerificationListSerializer(verifications, many=True)
 
+                serializer = VerificationListSerializer(verifications, many=True)
+                print(serializer)
                 return Response(serializer.data)
 
         except:
@@ -198,9 +204,10 @@ class VerificationListView(APIView):
 
 class VerificationCreateView(APIView):
 
+    parser_classes = (MultiPartParser, FormParser)
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, challenge_id):
+    def post(self, request, challenge_id, *args, **kwargs):
 
         participations = Participation.objects.filter(challenge=challenge_id, user=request.user)
         if participations.exists():

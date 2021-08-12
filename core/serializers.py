@@ -53,6 +53,7 @@ class VerificationListSerializer(serializers.ModelSerializer):
 
     nickname = serializers.SerializerMethodField()
     user_image = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = Verification
@@ -62,12 +63,24 @@ class VerificationListSerializer(serializers.ModelSerializer):
         return obj.participation_id.user.nickname
 
     def get_user_image(self, obj):
-        return obj.participation_id.user.image.url
+        try:
+            return obj.participation_id.user.image.url
+        except:
+            return None
+
+    def get_type(self, obj):
+        if not obj.file and obj.image:
+            return "image"
+        elif (obj.file and obj.image) or obj.file:
+            return "video"
+        else:
+            return "unknown"
 
 
 class VerificationSerializer(serializers.ModelSerializer):
 
     author = serializers.SerializerMethodField()
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = Verification
@@ -80,6 +93,14 @@ class VerificationSerializer(serializers.ModelSerializer):
         serializer = UserSerializer(user)
 
         return serializer.data
+
+    def get_type(self, obj):
+        if not obj.file and obj.image:
+            return "image"
+        elif (obj.file and obj.image) or obj.file:
+            return "video"
+        else:
+            return "unknown"
 
 
 class ChallengeDetailSerializer(serializers.ModelSerializer):
