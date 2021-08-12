@@ -52,7 +52,7 @@ class GatheringChallengeSerializer(serializers.ModelSerializer):
 class VerificationListSerializer(serializers.ModelSerializer):
 
     nickname = serializers.SerializerMethodField()
-    user_image_url = serializers.SerializerMethodField()
+    user_image = serializers.SerializerMethodField()
 
     class Meta:
         model = Verification
@@ -61,8 +61,8 @@ class VerificationListSerializer(serializers.ModelSerializer):
     def get_nickname(self, obj):
         return obj.participation_id.user.nickname
 
-    def get_user_image_url(self, obj):
-        return obj.participation_id.user.image_url
+    def get_user_image(self, obj):
+        return obj.participation_id.user.image.url
 
 
 class VerificationSerializer(serializers.ModelSerializer):

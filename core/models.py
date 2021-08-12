@@ -8,7 +8,7 @@ User = settings.AUTH_USER_MODEL
 
 class Challenge(models.Model):
     title = models.CharField(max_length=20, null=False, blank=False)
-    thumbnail_url = models.ImageField(null=False, blank=False)
+    thumbnail = models.ImageField(null=True, blank=True)
     create_date = models.DateField(auto_now_add=True)
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
@@ -30,7 +30,7 @@ class Participation(models.Model):
 
 class Verification(models.Model):
     participation_id = models.ForeignKey(Participation, on_delete=models.PROTECT)
-    file_url = models.FileField(null=False, blank=False)
+    file = models.FileField(null=False, blank=False)
     article = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verificated = models.BooleanField(default=False)

@@ -185,6 +185,7 @@ class VerificationListView(APIView):
 
         try:
             participation = Participation.objects.get(challenge=challenge_id, user=request.user)
+
             if participation is not None:
                 verifications = Verification.objects.filter(participation_id__challenge=challenge_id).order_by("-created_at")
                 serializer = VerificationListSerializer(verifications, many=True)

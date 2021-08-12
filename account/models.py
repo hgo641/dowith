@@ -10,13 +10,13 @@ import uuid
 
 class UserManager(BaseUserManager):
 
-    def create_user(self, provider, uid, nickname, image_url=None):
+    def create_user(self, provider, uid, nickname, image=None):
 
         user = self.model(
             provider=provider,
             uid=uid,
             nickname=nickname,
-            image_url=image_url
+            image=image
         )
 
         user.save(using=self._db)
@@ -45,7 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(_('password'), max_length=128, null=True, blank=True)
     nickname = models.CharField(max_length=10, null=False, blank=False)
     registered_on = models.DateTimeField(auto_now_add=True)
-    image_url = models.URLField(null=True, blank=True)
+    image = models.ImageField(null=True, blank=True)
     point = models.PositiveIntegerField(null=False, blank=False, default=5000)
 
     is_active = models.BooleanField(default=True)
