@@ -143,7 +143,7 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
     def get_total_accumulated_fine(self, obj):
         elapsed_date = 0
         if obj.start_date <= datetime.date.today():
-            elapsed_date = (datetime.date.today() - obj.start_date).days + 1
+            elapsed_date = (datetime.date.today() - obj.start_date).days
 
         participations = Participation.objects.filter(challenge=obj)
 
@@ -157,6 +157,7 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
                                                         participation_id=participation.id,
                                                         created_at__lte=datetime.date.today()
                                                         )
+
 
             total_success_count = total_success_count + verifications.count()
 
