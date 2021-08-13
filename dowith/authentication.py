@@ -29,7 +29,7 @@ class JWTAuthentication(BaseAuthentication):
             id = access_data.get('sub')
             user = User.objects.get(id=id)
             return (user, None)
-        except (ValueError, jwt.exceptions.DecodeError):
-            return None
+        # except (ValueError, jwt.exceptions.DecodeError):
+        #     return None
         except:
             return None
