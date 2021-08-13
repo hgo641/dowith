@@ -105,6 +105,7 @@ class ChallengeMyView(APIView):
         gathering_serializer = GatheringChallengeSerializer(gathering_challenge, many=True)
 
         return_data = {
+
             "gathering_ongoing_count": gathering_challenge.count() + participated_ongoing_challenge.count(),
             "finished_count": finished_challenge.count(),
             "gathering": gathering_serializer.data,
@@ -269,7 +270,18 @@ class VerificationMyView(APIView):
             elapsed_days = (datetime.date.today() - challenge.start_date).days + 1
             verification_failed_count = elapsed_days - verification_completed_count
 
+            today_verifications = Verification.objects.filter(participation_id=participation,
+                                                              created_at__year=datetime.datetime.today().year,
+                                                              created_at__month=datetime.datetime.today().month,
+                                                              created_at__day=datetime.datetime.today().day
+                                                              )
+
+            is_verificated = False
+            if today_verifications.exists():
+                is_verificated = True
+
             return_data = {
+                "is_today_verificated": is_verificated,
                 "verification_complete_count": verification_completed_count,
                 "verification_failed_count": verification_failed_count,
                 "total_challenge_ratio": int(verification_completed_count/elapsed_days * 100),
