@@ -221,23 +221,29 @@ class VerificationCreateView(APIView):
     def post(self, request, challenge_id, *args, **kwargs):
 
         participations = Participation.objects.filter(challenge=challenge_id, user=request.user)
+
         if participations.exists():
-            serializer = VerificationSerializer(data=request.data)
 
-            if serializer.is_valid():
-                verifications = Verification.objects.filter(participation_id=participations.first(),
-                                                            created_at__year=datetime.date.today().year,
-                                                            created_at__month=datetime.date.today().month,
-                                                            created_at__day=datetime.date.today().day
-                                                            )
+            verifications = Verification.objects.filter(participation_id=participations.first(),
+                                                        created_at__year=datetime.date.today().year,
+                                                        created_at__month=datetime.date.today().month,
+                                                        created_at__day=datetime.date.today().day
+                                                        )
 
-                if not verifications.exists():
+            if not verifications.exists():
+                try:
+                    verification = Verification()
+                    verification.participation_id = participations.first()
+                    verification.article = request.POST["article"]
+                    verification.image_url = request.FILES.get("image_url")
+                    verification.save()
 
-                    serializer.save(participation_id=participations.first())
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
+                    return Response(status=status.HTTP_201_CREATED)
 
-                else:
-                    return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "잘못된 값이 전달되었습니다."})
+                except:
+                    return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "잘못된 데이터입니다."})
+
+
 
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "이미 인증되었습니다."})

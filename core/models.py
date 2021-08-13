@@ -1,14 +1,30 @@
+import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from uuid import uuid4
 
 
 User = settings.AUTH_USER_MODEL
 
 
+
+def set_challenge_image_name(instance, filename):
+    return "image/challenge/{}/{}/{}/{}.jpg".format(datetime.datetime.today().year,
+                                                    datetime.datetime.today().month,
+                                                    datetime.datetime.today().day,
+                                                    uuid4().hex)
+
+def set_verification_image_name(instance, filename):
+    return "image/verification/{}/{}/{}/{}.jpg".format(datetime.datetime.today().year,
+                                                    datetime.datetime.today().month,
+                                                    datetime.datetime.today().day,
+                                                    uuid4().hex)
+
 class Challenge(models.Model):
     title = models.CharField(max_length=20, null=False, blank=False)
-    thumbnail_url = models.ImageField(null=True, blank=True)
+    thumbnail_url = models.FileField(null=True, blank=True, upload_to=set_challenge_image_name)
     create_date = models.DateField(auto_now_add=True)
     start_date = models.DateField(null=False, blank=False)
     end_date = models.DateField(null=False, blank=False)
@@ -30,8 +46,9 @@ class Participation(models.Model):
 
 
 class Verification(models.Model):
+
     participation_id = models.ForeignKey(Participation, on_delete=models.PROTECT)
-    image_url = models.ImageField(null=True, blank=True)
+    image_url = models.ImageField(null=True, blank=True, upload_to=set_verification_image_name)
     article = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_verificated = models.BooleanField(default=False)
