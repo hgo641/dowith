@@ -54,6 +54,7 @@ class VerificationListSerializer(serializers.ModelSerializer):
 
     nickname = serializers.SerializerMethodField()
     user_image_url = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Verification
@@ -68,10 +69,14 @@ class VerificationListSerializer(serializers.ModelSerializer):
         except:
             return None
 
+    def get_created_at(self, obj):
+        return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
+
 
 class VerificationSerializer(serializers.ModelSerializer):
 
     author = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
 
     class Meta:
         model = Verification
@@ -84,6 +89,9 @@ class VerificationSerializer(serializers.ModelSerializer):
         serializer = UserSerializer(user)
 
         return serializer.data
+
+    def get_created_at(self, obj):
+        return obj.created_at.strftime('%Y-%m-%d %H:%M:%S')
 
 
 
