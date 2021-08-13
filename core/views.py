@@ -304,9 +304,8 @@ class ChallengeRankView(APIView):
                 return_dict["elapse_days"] = (datetime.date.today() - challenge.start_date).days + 1
             else:
                 return_dict["elapse_days"] = 0
-
+            print("notyet")
             for verification in verifications:
-
                 temp_dict = dict()
                 temp_dict['user_id'] = verification["participation_id__user"]
                 temp_dict['verification_count'] = verification["verification_count"]
