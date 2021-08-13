@@ -3,6 +3,7 @@ import requests
 import os
 from rest_framework import status
 from rest_framework.response import Response
+from core.models import *
 
 
 def kakao_get_access_token(data):
@@ -51,6 +52,13 @@ def kakao_get_user(data):
         elif gender == 'female':
             user.gender = 'F'
         user.email = kakao_response['kakao_account'].get('email')
+
+        participation = Participation()
+        participation.user = user
+        participation.challenge_id = Challenge.objects.order_by('id').first()
+        participation.save()
+
+
         user.save()
     return user
 
