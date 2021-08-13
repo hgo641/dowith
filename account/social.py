@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 def kakao_get_access_token(data):
     app_rest_api_key = "2589e2db71042b3e03d86f96e07aec79"
-    redirect_uri = "http://127.0.0.1:3000/account/kakao"
+    redirect_uri = "https://dowith-api.likelion.app/account/kakao"
     code = data.get("code")
     url = 'https://kauth.kakao.com/oauth/token'
 
