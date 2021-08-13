@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-=frl=ssrt2!nb@j78czp#uqx02$*cqcz1mdb085y7@b^pae@*a'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -47,7 +47,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -170,5 +169,3 @@ AWS_S3_CUSTOM_DOMAIN = 'd1f5v0bury73ux.cloudfront.net'
 CORS_ORIGIN_ALLOW_ALL = True
 
 #CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-
-STATIC_ROOT = BASE_DIR / 'static'
