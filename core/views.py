@@ -255,11 +255,11 @@ class VerificationMyView(APIView):
             participation = Participation.objects.get(challenge=challenge_id, user=request.user)
             challenge = Challenge.objects.get(pk=challenge_id)
 
-            verifications = Verification.objects.filter(participation_id=participation, is_verificated=True)\
+            verifications = Verification.objects.filter(participation_id=participation)\
                 .order_by("-created_at")
             serializer = VerificationSerializer(verifications, many=True)
 
-            verification_completed_count = verifications.count()
+            verification_completed_count = verifications.filter(is_verificated=True).count()
             elapsed_days = (datetime.date.today() - challenge.start_date).days + 1
             verification_failed_count = elapsed_days - verification_completed_count
 
@@ -294,6 +294,7 @@ class ChallengeRankView(APIView):
                 .annotate(verification_count=Count("participation_id__user"))\
                 .order_by('-verification_count')
 
+            print(verifications)
 
             return_dict = dict()
             temp_list = list()
@@ -304,7 +305,7 @@ class ChallengeRankView(APIView):
                 return_dict["elapse_days"] = (datetime.date.today() - challenge.start_date).days + 1
             else:
                 return_dict["elapse_days"] = 0
-            print("notyet")
+
             for verification in verifications:
                 temp_dict = dict()
                 temp_dict['user_id'] = verification["participation_id__user"]
