@@ -74,10 +74,13 @@ class ChallengeTodayView(APIView):
         finished_serializer = ChallengeSerializer(finished_challenge, many=True)
 
         total_challenge = ongoing_challenge.count() + finished_challenge.count()
+        complete_percentage = 0
+        if total_challenge != 0:
+            complete_percentage = int(finished_challenge.count() / total_challenge) * 100
 
 
         return_data = {
-            "complete_percentage": int(finished_challenge.count() / total_challenge) * 100,
+            "complete_percentage": complete_percentage,
             "ongoing": ongoing_serializer.data,
             "finished": finished_serializer.data
         }
