@@ -37,7 +37,6 @@ class ChallengeMainView(APIView):
 
     def post(self, request, *args, **kwargs):
 
-
         serializer = ChallengeSerializer(data=request.data)
 
         if serializer.is_valid():
@@ -99,12 +98,8 @@ class ChallengeMyView(APIView):
 
         temp_finished_return = finished_serializer.data
 
-        print(temp_finished_return)
-
         for item in temp_finished_return:
             item["total_distribute_charge"] = Participation.objects.get(challenge=item["id"], user=request.user).total_distribute_charge
-
-        print(temp_finished_return)
 
         gathering_challenge = participated_challenge.filter(start_date__gt=datetime.date.today())
         gathering_serializer = GatheringChallengeSerializer(gathering_challenge, many=True)
@@ -212,7 +207,6 @@ class VerificationListView(APIView):
                 verifications = Verification.objects.filter(participation_id__challenge=challenge_id).order_by("-created_at")
 
                 serializer = VerificationListSerializer(verifications, many=True)
-                print(serializer)
                 return Response(serializer.data)
 
         except:
@@ -261,7 +255,8 @@ class VerificationMyView(APIView):
             participation = Participation.objects.get(challenge=challenge_id, user=request.user)
             challenge = Challenge.objects.get(pk=challenge_id)
 
-            verifications = Verification.objects.filter(participation_id=participation).order_by("-created_at")
+            verifications = Verification.objects.filter(participation_id=participation, is_verificated=True)\
+                .order_by("-created_at")
             serializer = VerificationSerializer(verifications, many=True)
 
             verification_completed_count = verifications.count()
@@ -294,18 +289,16 @@ class ChallengeRankView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         else:
 
-            verifications = Verification.objects.filter(participation_id__challenge=challenge_id)\
+            verifications = Verification.objects.filter(participation_id__challenge_id=challenge_id, is_verificated=True)\
                 .values('participation_id__user')\
                 .annotate(verification_count=Count("participation_id__user"))\
                 .order_by('-verification_count')
 
-            print(verifications)
 
             return_dict = dict()
             temp_list = list()
             temp_rank = 0
             temp_count = -1
-
 
             if challenge.start_date <= datetime.date.today():
                 return_dict["elapse_days"] = (datetime.date.today() - challenge.start_date).days + 1
