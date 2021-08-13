@@ -52,7 +52,7 @@ class Verification(models.Model):
     participation_id = models.ForeignKey(Participation, on_delete=models.PROTECT)
     image_url = models.ImageField(null=True, blank=True, upload_to=set_verification_image_name)
     article = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(default=timezone.now())
+    created_at = models.DateTimeField(default=datetime.datetime.now())
     is_verificated = models.BooleanField(default=False)
 
     def __str__(self):
