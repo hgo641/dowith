@@ -65,7 +65,7 @@ class ChallengeTodayView(APIView):
                                                      end_date__gte=datetime.date.today()
                                                      )
         finished_challenge = Challenge.objects.filter(participation__user=request.user,
-                                                      participation__verification=not None,
+                                                      participation__verification__isnull=False,
                                                       start_date__lte=datetime.date.today(),
                                                       end_date__gte=datetime.date.today()
                                                       )
@@ -73,7 +73,11 @@ class ChallengeTodayView(APIView):
         ongoing_serializer = ChallengeSerializer(ongoing_challenge, many=True)
         finished_serializer = ChallengeSerializer(finished_challenge, many=True)
 
+        total_challenge = ongoing_challenge.count() + finished_challenge.count()
+
+
         return_data = {
+            "complete_percentage": int(finished_challenge.count() / total_challenge) * 100,
             "ongoing": ongoing_serializer.data,
             "finished": finished_serializer.data
         }
