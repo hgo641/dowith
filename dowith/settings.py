@@ -114,7 +114,7 @@ AUTH_USER_MODEL = 'account.User'
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
-LANGUAGE_CODE = 'ko-ko'
+LANGUAGE_CODE = 'ko-kr'
 
 TIME_ZONE = 'Asia/Seoul'
 
