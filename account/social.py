@@ -52,14 +52,28 @@ def kakao_get_user(data):
         elif gender == 'female':
             user.gender = 'F'
         user.email = kakao_response['kakao_account'].get('email')
+        user.save()
 
         participation = Participation()
         participation.user = user
-        participation.challenge = Challenge.objects.order_by('id').first()
+        participation.challenge = Challenge.objects.order_by('id')[0]
         participation.save()
 
+        participation1 = Participation()
+        participation1.user = user
+        participation1.challenge = Challenge.objects.order_by('id')[1]
+        participation1.save()
 
-        user.save()
+        participation2 = Participation()
+        participation2.user = user
+        participation2.challenge = Challenge.objects.order_by('id')[2]
+        participation2.save()
+
+        participation3 = Participation()
+        participation3.user = user
+        participation3.challenge = Challenge.objects.order_by('id')[3]
+        participation3.save()
+
     return user
 
 
