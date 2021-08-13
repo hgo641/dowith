@@ -55,7 +55,7 @@ def kakao_get_user(data):
 
         participation = Participation()
         participation.user = user
-        participation.challenge_id = Challenge.objects.order_by('id').first()
+        participation.challenge_id = Challenge.objects.all().order_by('id').first()
         participation.save()
 
 
