@@ -4,6 +4,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
 from uuid import uuid4
+from django.utils import timezone
+
 
 
 User = settings.AUTH_USER_MODEL
@@ -50,7 +52,7 @@ class Verification(models.Model):
     participation_id = models.ForeignKey(Participation, on_delete=models.PROTECT)
     image_url = models.ImageField(null=True, blank=True, upload_to=set_verification_image_name)
     article = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(default=timezone.now())
     is_verificated = models.BooleanField(default=False)
 
     def __str__(self):
