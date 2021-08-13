@@ -237,13 +237,13 @@ class VerificationCreateView(APIView):
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
                 else:
-                    return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "이미 인증되었습니다."})
+                    return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "잘못된 값이 전달되었습니다."})
 
             else:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "이미 인증되었습니다."})
 
         else:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST, data={"message": "참여하지 않는 챌린지 입니다."})
 
 
 class VerificationMyView(APIView):
@@ -293,8 +293,6 @@ class ChallengeRankView(APIView):
                 .values('participation_id__user')\
                 .annotate(verification_count=Count("participation_id__user"))\
                 .order_by('-verification_count')
-
-            print(verifications)
 
             return_dict = dict()
             temp_list = list()

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 from account.serializers import *
 import datetime
+import math
 
 
 class ChallengeSerializer(serializers.ModelSerializer):
@@ -94,6 +95,7 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
     elapsed_days = serializers.SerializerMethodField()
     days_left = serializers.SerializerMethodField()
     captain_name = serializers.SerializerMethodField()
+    total_accumulated_fine = serializers.SerializerMethodField()
 
     class Meta:
         model = Challenge
@@ -129,3 +131,20 @@ class ChallengeDetailSerializer(serializers.ModelSerializer):
             return 0
         else:
             return (obj.start_date - datetime.date.today()).days
+
+    def get_total_accumulated_fine(self, obj):
+
+        participations = Participation.objects.filter(challenge=obj)
+
+        total_failed_count = 0
+        total_challange_length = (obj.end_date - obj.start_date).days + 1
+
+        for participation in participations:
+            verifications = Verification.objects.filter(is_verificated=False,
+                                                        participation_id=participation.id,
+                                                        created_at__lte=datetime.date.today()
+                                                        )
+            total_failed_count = total_failed_count + verifications.count()
+
+        return total_failed_count * (math.ceil(obj.fee / total_challange_length))
+
