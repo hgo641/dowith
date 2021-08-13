@@ -8,6 +8,12 @@ import uuid
 # Create your models here.
 datetime.utcnow()
 
+def set_user_image_name(instance, filename):
+    return "image/user/{}/{}/{}/{}.jpg".format(datetime.datetime.today().year,
+                                                    datetime.datetime.today().month,
+                                                    datetime.datetime.today().day,
+                                                    uuid.uuid4().hex)
+
 class UserManager(BaseUserManager):
 
     def create_user(self, provider, uid, nickname, image_url=None):
@@ -45,7 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(_('password'), max_length=128, null=True, blank=True)
     nickname = models.CharField(max_length=10, null=False, blank=False)
     registered_on = models.DateTimeField(auto_now_add=True)
-    image_url = models.ImageField(null=True, blank=True)
+    image_url = models.ImageField(null=True, blank=True, upload_to=set_user_image_name)
     point = models.PositiveIntegerField(null=False, blank=False, default=5000)
 
     is_active = models.BooleanField(default=True)
