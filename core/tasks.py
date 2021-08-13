@@ -21,14 +21,14 @@ def distribute_charge():
     finished_challenges = Challenge.objects.filter(end_date = yesterday)
     for fc in finished_challenges:
         finished_participation = Participation.objects.filter(challenge = fc)
-        verification_count = Verification.objects.filter(participation_id__in = finished_participation).count()
+        verification_count = Verification.objects.filter(participation_id__in = finished_participation, is_verificated = True).count()
         date_period = (fc.end_date - fc.start_date).days+1
         required_verification =date_period*finished_participation.count()
         fine = math.ceil(fc.fee/date_period)
 
         total_accumulated_fine = (required_verification-verification_count)*fine
         
-        finished_verifications = Verification.objects.filter(participation_id__in = finished_participation)
+        finished_verifications = Verification.objects.filter(participation_id__in = finished_participation, is_verificated = True)
         all_participants = finished_verifications.values('participation_id')\
             .annotate(count = Count('participation_id'))#.filter(count=3)#filter count=3없애고
         completed_participants = finished_verifications.values('participation_id')\
