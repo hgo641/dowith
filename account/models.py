@@ -5,13 +5,16 @@ from datetime import datetime
 import uuid
 
 
+
 # Create your models here.
 datetime.utcnow()
 
+
+
 def set_user_image_name(instance, filename):
-    return "image/user/{}/{}/{}/{}.jpg".format(datetime.datetime.today().year,
-                                                    datetime.datetime.today().month,
-                                                    datetime.datetime.today().day,
+    return "image/user/{}/{}/{}/{}.jpg".format(datetime.today().year,
+                                                    datetime.today().month,
+                                                    datetime.today().day,
                                                     uuid.uuid4().hex)
 
 class UserManager(BaseUserManager):
